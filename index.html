@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cristal OSINT — Communauté & Boîte à Outils d'Enquête Numérique</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#00f0ff',
+                            600: '#00d0e0',
+                            700: '#00838d',
+                            800: '#032b38',
+                            900: '#031726',
+                            950: '#010b14',
+                        },
+                        neon: {
+                            cyan: '#00f0ff',
+                            magenta: '#ff007f',
+                            purple: '#8a2be2',
+                            blue: '#3b82f6'
+                        }
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 3s infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 15px rgba(0, 240, 255, 0.2)' },
+                            '100%': { boxShadow: '0 0 35px rgba(0, 240, 255, 0.6)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030a12;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(8, 21, 38, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.12);
+        }
+
+        .glass-panel-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-panel-hover:hover {
+            border-color: rgba(0, 240, 255, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(0, 240, 255, 0.25);
+            transform: translateY(-3px);
+        }
+
+        .neon-border {
+            position: relative;
+        }
+        .neon-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(45deg, #00f0ff, #8a2be2, #ff007f);
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+        .neon-border:hover::before {
+            opacity: 0.8;
+        }
+
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030a12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col bg-grid-pattern">
+
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Logo & Brand -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-pink-500 flex items-center justify-center p-0.5 shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform duration-300">
+                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                        <i class="fa-solid font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400 fa-gem text-lg"></i>
+                    </div>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-200 to-cyan-400">CRISTAL</span>
+                    <span class="text-xs block font-mono text-cyan-400/80 tracking-widest uppercase -mt-1">OSINT Community</span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-300">
+                <a href="#tools" class="hover:text-cyan-400 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-toolbox text-xs text-cyan-400"></i> Boîte à Outils
+                </a>
+                <a href="#dork-generator" class="hover:text-cyan-400 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-terminal text-xs text-pink-400"></i> Google Dorks
+                </a>
+                <a href="#about" class="hover:text-cyan-400 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-xs text-indigo-400"></i> À propos
+                </a>
+            </nav>
+
+            <!-- CTA Button -->
+            <div class="flex items-center gap-4">
+                <a href="https://discord.gg/qsv59RxjRR" target="_blank" rel="noopener noreferrer" class="relative group overflow-hidden rounded-xl p-px font-semibold text-sm">
+                    <span class="absolute inset-0 bg-gradient-to-r from-cyan-500 via-indigo-500 to-pink-500 group-hover:opacity-100 transition-opacity"></span>
+                    <span class="relative px-4 py-2.5 rounded-[11px] bg-slate-950 flex items-center gap-2.5 text-white group-hover:bg-opacity-80 transition-all">
+                        <i class="fa-brands fa-discord text-indigo-400 text-base group-hover:scale-110 transition-transform"></i>
+                        <span class="hidden sm:inline">Rejoindre le</span> Discord
+                    </span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative pt-12 pb-20 md:pt-24 md:pb-32 overflow-hidden">
+        <!-- Ambient background glows -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-r from-cyan-600/20 via-indigo-600/20 to-pink-600/20 blur-[120px] rounded-full pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-panel border-cyan-500/30 text-cyan-300 text-xs font-mono mb-8 animate-float">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                <span>CRISTAL OSINT INTELLIGENCE HUB v2.4</span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white mb-6 leading-tight">
+                L'Art de l'Enquête Numérique <br class="hidden sm:block"/>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-indigo-300 to-pink-500">
+                    À la Portée de Tous
+                </span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="max-w-3xl mx-auto text-lg sm:text-xl text-slate-400 mb-10 leading-relaxed font-normal">
+                Plateforme centrale du serveur Discord <strong class="text-white font-semibold">Cristal</strong>. Explorez notre sélection rigoureuse des meilleurs outils d'investigation en source ouverte (OSINT), d'analyse de données et de géolocalisation.
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="https://discord.gg/qsv59RxjRR" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-slate-950 bg-gradient-to-r from-cyan-400 via-cyan-300 to-pink-400 hover:shadow-[0_0_30px_rgba(0,240,255,0.4)] transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-3">
+                    <i class="fa-brands fa-discord text-xl"></i>
+                    <span>Rejoindre la Communauté Cristal</span>
+                </a>
+                <a href="#tools" class="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-slate-200 glass-panel hover:bg-slate-800/80 hover:text-cyan-300 transition-all flex items-center justify-center gap-2 border border-slate-700">
+                    <i class="fa-solid fa-magnifying-glass text-cyan-400"></i>
+                    <span>Explorer la Boîte à Outils</span>
+                </a>
+            </div>
+
+            <!-- Live Stats Bar -->
+            <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
+                <div class="glass-panel p-4 rounded-xl border-slate-800/80">
+                    <div class="text-xs font-mono text-slate-400 mb-1">MEMBRES DISCORD</div>
+                    <div class="text-2xl font-bold text-cyan-400 font-mono">1.000+</div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border-slate-800/80">
+                    <div class="text-xs font-mono text-slate-400 mb-1">OUTILS INDEXÉS</div>
+                    <div class="text-2xl font-bold text-pink-400 font-mono">35+</div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border-slate-800/80">
+                    <div class="text-xs font-mono text-slate-400 mb-1">CATÉGORIES OSINT</div>
+                    <div class="text-2xl font-bold text-indigo-400 font-mono">6 SECTEURS</div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border-slate-800/80">
+                    <div class="text-xs font-mono text-slate-400 mb-1">ACCÈS & ENTRAIDE</div>
+                    <div class="text-2xl font-bold text-emerald-400 font-mono">100% GRATUIT</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="dork-generator" class="py-16 bg-slate-950/60 border-y border-slate-800/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-10 items-start">
+                
+                <!-- Info Column -->
+                <div class="lg:w-1/3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-400 text-xs font-mono mb-4">
+                        <i class="fa-solid fa-terminal"></i> MODULE INTERACTIF
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-white mb-4">
+                        Générateur de <br class="hidden sm:block"/>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">Google Dorks</span>
+                    </h2>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Saisissez une cible (nom de domaine ou mot-clé) pour générer automatiquement des dorks de recherche avancée permettant d'identifier des données exposées.
+                    </p>
+                    <div class="p-4 rounded-xl glass-panel border-pink-500/20 text-xs text-slate-300 font-mono space-y-2">
+                        <div class="text-pink-400 font-bold"><i class="fa-solid fa-lightbulb"></i> Exemples de cibles :</div>
+                        <p>• Domain: <span class="text-cyan-300">example.com</span></p>
+                        <p>• Entreprise: <span class="text-cyan-300">"Societe Exemple"</span></p>
+                    </div>
+                </div>
+
+                <!-- Interactive Dork Console -->
+                <div class="lg:w-2/3 w-full glass-panel rounded-2xl p-6 border-slate-700/80">
+                    <div class="mb-6">
+                        <label for="dork-target" class="block text-xs font-mono text-slate-300 uppercase tracking-wider mb-2">Cible / Target (Domaine ou Mots-clés)</label>
+                        <div class="relative">
+                            <input type="text" id="dork-target" placeholder="ex: example.com ou targetorg" value="target.com" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-4 py-3 pl-10 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono text-sm transition-all">
+                            <i class="fa-solid fa-crosshairs absolute left-3.5 top-3.5 text-slate-500"></i>
+                        </div>
+                    </div>
+
+                    <!-- Dork Queries Output -->
+                    <div class="space-y-3" id="dorks-list">
+                        <!-- Generated via Javascript -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="tools" class="py-16 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Header Section -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-3">
+                        <i class="fa-solid fa-database"></i> DIRECTOIRE CRISTAL
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Boîte à Outils OSINT</h2>
+                    <p class="text-slate-400 text-sm mt-1">Sélection vérifiée d'outils pour l'investigation numérique et le renseignement.</p>
+                </div>
+
+                <!-- Instant Search Bar -->
+                <div class="w-full md:w-80">
+                    <div class="relative">
+                        <input type="text" id="search-input" placeholder="Rechercher un outil, tag..." class="w-full bg-slate-900/90 border border-slate-700 focus:border-cyan-400 text-white text-sm rounded-xl py-3 pl-10 pr-4 placeholder-slate-500 focus:outline-none transition-all">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-500"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar" id="category-filters">
+                <button class="cat-btn active px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap bg-cyan-500 text-slate-950 font-bold" data-category="all">
+                    Tous les outils (<span id="count-all">0</span>)
+                </button>
+                <button class="cat-btn px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800" data-category="username">
+                    <i class="fa-solid fa-user-tag mr-1.5"></i>Pseudo & Noms
+                </button>
+                <button class="cat-btn px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800" data-category="image">
+                    <i class="fa-solid fa-image mr-1.5"></i>Images & Géoloc
+                </button>
+                <button class="cat-btn px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800" data-category="network">
+                    <i class="fa-solid fa-network-wired mr-1.5"></i>IP & Domaines
+                </button>
+                <button class="cat-btn px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800" data-category="social">
+                    <i class="fa-solid fa-hashtag mr-1.5"></i>Réseaux Sociaux
+                </button>
+                <button class="cat-btn px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800" data-category="email">
+                    <i class="fa-solid fa-envelope-open-text mr-1.5"></i>Emails & Leaks
+                </button>
+                <button class="cat-btn px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800" data-category="web">
+                    <i class="fa-solid fa-globe mr-1.5"></i>Web & Archives
+                </button>
+            </div>
+
+            <!-- Tools Grid Container -->
+            <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically Populated by JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden text-center py-16 glass-panel rounded-2xl border-dashed">
+                <i class="fa-solid fa-ghost text-4xl text-slate-600 mb-3"></i>
+                <h3 class="text-lg font-bold text-white mb-1">Aucun outil trouvé</h3>
+                <p class="text-slate-400 text-sm">Essayez de modifier votre terme de recherche ou le filtre sélectionné.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="about" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="glass-panel rounded-3xl p-8 sm:p-12 relative overflow-hidden border-cyan-500/20">
+                <!-- Decorative Elements -->
+                <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                    <div class="lg:col-span-8">
+                        <div class="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 bg-cyan-950/60 border border-cyan-500/30 px-3 py-1 rounded-full mb-4">
+                            <i class="fa-solid fa-users"></i> COMMUNAUTÉ DISCORD
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-white mb-4">
+                            Rejoignez le serveur Discord <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500">Cristal</span>
+                        </h2>
+                        <p class="text-slate-300 leading-relaxed mb-6 text-sm sm:text-base">
+                            Cristal est un serveur francophone dédié au partage de connaissances autour de l'OSINT, la cybersécurité, la géolocalisation et les enquêtes numériques. Que vous soyez débutant curieux ou enquêteur assidu, vous y trouverez des tutoriels, des défis (CTF) et un espace d'entraide actif.
+                        </p>
+                        <div class="flex flex-wrap gap-4 text-xs font-mono text-slate-400">
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-cyan-400"></i> Entraide & Discussions</span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-cyan-400"></i> Veille Cybersécurité</span>
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-cyan-400"></i> Challenges OSINT</span>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-4 flex justify-center lg:justify-end">
+                        <a href="https://discord.gg/qsv59RxjRR" target="_blank" rel="noopener noreferrer" class="px-8 py-5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-3 shadow-xl shadow-indigo-600/30 hover:shadow-indigo-500/50 transition-all transform hover:scale-105">
+                            <i class="fa-brands fa-discord text-2xl"></i>
+                            <div class="text-left">
+                                <div class="text-xs font-normal opacity-80">Rejoindre le serveur</div>
+                                <div class="text-base font-extrabold">DISCORD CRISTAL</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="mt-auto border-t border-slate-800/80 bg-slate-950/80 py-8 text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-gem text-cyan-400"></i>
+                <span>© 2026 <strong>Cristal OSINT Hub</strong>. Tous droits réservés. Outil éducatif et d'investigation éthique.</span>
+            </div>
+            <div class="flex items-center gap-6">
+                <a href="#tools" class="hover:text-cyan-400 transition-colors">Outils</a>
+                <a href="#dork-generator" class="hover:text-cyan-400 transition-colors">Google Dorks</a>
+                <a href="https://discord.gg/qsv59RxjRR" target="_blank" rel="noopener noreferrer" class="hover:text-cyan-400 transition-colors">Discord</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Data Store for OSINT Tools
+        const osintTools = [
+            // Pseudo & Username
+            {
+                name: "WhatsMyName",
+                category: "username",
+                desc: "Recherche un nom d'utilisateur sur des centaines de sites web et plateformes sociales simultanément.",
+                url: "https://whatsmyname.app",
+                tags: ["Usernames", "Social Media", "OSINT"],
+                icon: "fa-user-ninja"
+            },
+            {
+                name: "Sherlock Project",
+                category: "username",
+                desc: "Outil puissant d'investigation en ligne de commande pour traquer des comptes utilisateurs à travers le web.",
+                url: "https://sherlock-project.github.io",
+                tags: ["Python", "CLI", "Username Search"],
+                icon: "fa-magnifying-glass"
+            },
+            {
+                name: "Namechk",
+                category: "username",
+                desc: "Vérifiez la disponibilité et l'existence d'un pseudo ou d'un nom de domaine sur les plateformes Web2 et Web3.",
+                url: "https://namechk.com",
+                tags: ["Usernames", "Domains"],
+                icon: "fa-id-badge"
+            },
+
+            // Image & Geoloc
+            {
+                name: "Yandex Images",
+                category: "image",
+                desc: "L'un des moteurs de recherche inversée d'images les plus performants pour identifier des visages et lieux.",
+                url: "https://yandex.com/images",
+                tags: ["Reverse Image", "Facial Recognition"],
+                icon: "fa-image"
+            },
+            {
+                name: "GeoSpy AI",
+                category: "image",
+                desc: "Plateforme basée sur l'IA capable de deviner la géolocalisation d'une photo grâce aux indices visuels.",
+                url: "https://geospy.web.app",
+                tags: ["AI", "Geolocation", "Landmarks"],
+                icon: "fa-earth-americas"
+            },
+            {
+                name: "TinEye",
+                category: "image",
+                desc: "Moteur de recherche d'images inversée spécialisé dans la recherche d'originaux et le suivi de modifications.",
+                url: "https://tineye.com",
+                tags: ["Reverse Search", "Image Metadata"],
+                icon: "fa-camera font-bold"
+            },
+            {
+                name: "SunCalc",
+                category: "image",
+                desc: "Calcule le mouvement du soleil et la position des ombres à une heure et une date données pour la chronolocation.",
+                url: "https://www.suncalc.org",
+                tags: ["Chronolocation", "Shadows", "Sun"],
+                icon: "fa-sun"
+            },
+            {
+                name: "ExifTool / Jeffrey's Image Metadata",
+                category: "image",
+                desc: "Analyse approfondie des métadonnées EXIF cachées dans les fichiers images (GPS, appareil, date).",
+                url: "https://exif.regex.info/exif.cgi",
+                tags: ["EXIF", "Metadata", "GPS"],
+                icon: "fa-file-image"
+            },
+
+            // IP & Networks
+            {
+                name: "Shodan",
+                category: "network",
+                desc: "Moteur de recherche spécialisé dans l'indexation des appareils connectés à Internet, serveurs et caméras.",
+                url: "https://www.shodan.io",
+                tags: ["IoT", "Port Scan", "Infrastructure"],
+                icon: "fa-network-wired"
+            },
+            {
+                name: "Censys",
+                category: "network",
+                desc: "Analyse des hôtes Internet, certificats SSL/TLS et exposition des services réseau globalement.",
+                url: "https://censys.io",
+                tags: ["Certificates", "Hosts", "Network"],
+                icon: "fa-server"
+            },
+            {
+                name: "VirusTotal",
+                category: "network",
+                desc: "Analyse de fichiers, URL, adresses IP et domaines suspects à l'aide de dizaines d'antivirus.",
+                url: "https://www.virustotal.com",
+                tags: ["Malware", "Reputation", "DNS"],
+                icon: "fa-shield-virus"
+            },
+            {
+                name: "SecurityTrails",
+                category: "network",
+                desc: "Historique complet des enregistrements DNS, sous-domaines et adresses IP associées.",
+                url: "https://securitytrails.com",
+                tags: ["DNS History", "Subdomains"],
+                icon: "fa-sitemap"
+            },
+            {
+                name: "IPinfo.io",
+                category: "network",
+                desc: "Géolocalisation précise des adresses IP, ASN, ISP et détection d'utilisation de VPN/Proxy.",
+                url: "https://ipinfo.io",
+                tags: ["IP Lookup", "ASN", "Geolocation"],
+                icon: "fa-location-dot"
+            },
+
+            // Social & People
+            {
+                name: "EPIEO",
+                category: "social",
+                desc: "Outil de reverse-lookup pour retrouver des comptes associés à une adresse e-mail sur les réseaux sociaux.",
+                url: "https://epieos.com",
+                tags: ["Email Lookup", "Google ID", "Social"],
+                icon: "fa-user-check"
+            },
+            {
+                name: "Social Searcher",
+                category: "social",
+                desc: "Moteur de recherche de médias sociaux en temps réel. Analyse de tendances et de mentions publiques.",
+                url: "https://www.social-searcher.com",
+                tags: ["Social Media", "Realtime", "Mentions"],
+                icon: "fa-hashtag"
+            },
+            {
+                name: "Osintgram",
+                category: "social",
+                desc: "Outil CLI offrant une analyse complète des profils Instagram publics (followers, likes, photos).",
+                url: "https://github.com/Datalux/Osintgram",
+                tags: ["Instagram", "Social", "Python"],
+                icon: "fa-brands fa-instagram"
+            },
+
+            // Email & Breaches
+            {
+                name: "Have I Been Pwned",
+                category: "email",
+                desc: "Base de données vérifiant si une adresse e-mail ou un compte a été compromis dans des fuites publiques.",
+                url: "https://haveibeenpwned.com",
+                tags: ["Breaches", "Leaked Data", "Email"],
+                icon: "fa-user-shield"
+            },
+            {
+                name: "DeHashed",
+                category: "email",
+                desc: "Moteur de recherche avancé de fuites de données pour auditer les identifiants et hashs compromis.",
+                url: "https://dehashed.com",
+                tags: ["Data Leak", "Hashes", "Investigation"],
+                icon: "fa-database"
+            },
+            {
+                name: "Hunter.io",
+                category: "email",
+                desc: "Trouvez rapidement les adresses emails professionnelles associées à un nom de domaine d'entreprise.",
+                url: "https://hunter.io",
+                tags: ["Corporate", "Email Finder", "Domain"],
+                icon: "fa-envelope-open"
+            },
+
+            // Documents & Archives
+            {
+                name: "Wayback Machine",
+                category: "web",
+                desc: "Consultez les versions archivées et historiques d'un site web à travers les époques.",
+                url: "https://web.archive.org",
+                tags: ["Archive", "History", "Cache"],
+                icon: "fa-clock-rotate-left"
+            },
+            {
+                name: "CyberChef",
+                category: "web",
+                desc: "Le 'Couteau Suisse' du traitement de données : encodage, décodage, déchiffrement et parsing.",
+                url: "https://gchq.github.io/CyberChef",
+                tags: ["Decoder", "Crypto", "Utility"],
+                icon: "fa-kitchen-set"
+            },
+            {
+                name: "Google Dorks Generator",
+                category: "web",
+                desc: "Générez des opérateurs de recherche Google avancés pour trouver des données cachées ou sensibles.",
+                url: "#dork-generator",
+                tags: ["Google Dorks", "Recherche Avancée"],
+                icon: "fa-brands fa-google"
+            }
+        ];
+
+        // Google Dork templates definition
+        const dorkTemplates = [
+            { title: "Fichiers PDF / Docs sensibles", query: 'site:{target} filetype:pdf OR filetype:doc OR filetype:xlsx "confidentiel"' },
+            { title: "Répertoires ouverts / Open Directories", query: 'site:{target} intitle:"index of" "parent directory"' },
+            { title: "Pages de Connexion / Admin Passwords", query: 'site:{target} inurl:admin OR inurl:login OR inurl:dashboard' },
+            { title: "Fichiers de Configuration / Env / Logs", query: 'site:{target} ext:env OR ext:log OR ext:db OR ext:sql' }
+        ];
+
+        // State Management
+        let activeCategory = 'all';
+        let searchQuery = '';
+
+        // DOM Elements
+        const toolsGrid = document.getElementById('tools-grid');
+        const searchInput = document.getElementById('search-input');
+        const categoryFilters = document.getElementById('category-filters');
+        const emptyState = document.getElementById('empty-state');
+        const dorkTargetInput = document.getElementById('dork-target');
+        const dorksListContainer = document.getElementById('dorks-list');
+
+        function initApp() {
+            renderTools();
+            renderDorks();
+            updateCounts();
+
+            // Event Listeners
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase().trim();
+                renderTools();
+            });
+
+            categoryFilters.addEventListener('click', (e) => {
+                const btn = e.target.closest('.cat-btn');
+                if (!btn) return;
+
+                document.querySelectorAll('.cat-btn').forEach(b => {
+                    b.classList.remove('bg-cyan-500', 'text-slate-950', 'font-bold');
+                    b.classList.add('bg-slate-900/80', 'text-slate-400');
+                });
+
+                btn.classList.remove('bg-slate-900/80', 'text-slate-400');
+                btn.classList.add('bg-cyan-500', 'text-slate-950', 'font-bold');
+
+                activeCategory = btn.dataset.category;
+                renderTools();
+            });
+
+            dorkTargetInput.addEventListener('input', renderDorks);
+        }
+
+        // Render Tools Function
+        function renderTools() {
+            const filtered = osintTools.filter(tool => {
+                const matchesCategory = activeCategory === 'all' || tool.category === activeCategory;
+                const matchesSearch = tool.name.toLowerCase().includes(searchQuery) ||
+                                      tool.desc.toLowerCase().includes(searchQuery) ||
+                                      tool.tags.some(tag => tag.toLowerCase().includes(searchQuery));
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                toolsGrid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                toolsGrid.innerHTML = filtered.map(tool => `
+                    <div class="glass-panel glass-panel-hover rounded-2xl p-6 flex flex-col justify-between h-full group border-slate-800">
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-cyan-400 group-hover:text-pink-400 group-hover:border-pink-500/30 transition-colors">
+                                    <i class="fa-solid ${tool.icon} text-xl"></i>
+                                </div>
+                                <span class="text-[10px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-400">
+                                    ${tool.category}
+                                </span>
+                            </div>
+
+                            <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                                ${tool.name}
+                            </h3>
+                            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6">
+                                ${tool.desc}
+                            </p>
+                        </div>
+
+                        <div>
+                            <div class="flex flex-wrap gap-1.5 mb-6">
+                                ${tool.tags.map(tag => `<span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900/60 text-slate-400 border border-slate-800/60">#${tag}</span>`).join('')}
+                            </div>
+
+                            <a href="${tool.url}" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-cyan-500 hover:text-slate-950 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 hover:border-cyan-400">
+                                <span>ACCÉDER À L'OUTIL</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Render Dorks Function
+        function renderDorks() {
+            const target = dorkTargetInput.value.trim() || 'example.com';
+            
+            dorksListContainer.innerHTML = dorkTemplates.map((template, index) => {
+                const finalQuery = template.query.replace(/{target}/g, target);
+                const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(finalQuery)}`;
+
+                return `
+                    <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="overflow-hidden">
+                            <div class="text-xs font-bold text-slate-300 mb-1 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>
+                                ${template.title}
+                            </div>
+                            <div class="text-xs font-mono text-cyan-400 truncate bg-slate-950/60 p-2 rounded border border-slate-800">
+                                ${escapeHtml(finalQuery)}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button onclick="copyToClipboard('${escapeJsString(finalQuery)}', this)" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-mono transition-colors" title="Copier la requête">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                            <a href="${googleUrl}" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-lg bg-pink-600/80 hover:bg-pink-500 text-white text-xs font-mono font-bold flex items-center gap-1.5 transition-colors">
+                                <span>Lancer</span>
+                                <i class="fa-solid fa-external-link text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Helper Function to Copy Text
+        function copyToClipboard(text, btnElement) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            const icon = btnElement.querySelector('i');
+            icon.className = 'fa-solid fa-check text-emerald-400';
+            setTimeout(() => {
+                icon.className = 'fa-solid fa-copy';
+            }, 2000);
+        }
+
+        function updateCounts() {
+            document.getElementById('count-all').innerText = osintTools.length;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function escapeJsString(str) {
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        }
+
+        // Initialize when window loads
+        window.onload = initApp;
+    </script>
+</body>
+</html>
