@@ -1,1 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="OSINT Atlas — plus de 350 outils OSINT classés, filtrables et documentés : recherche, réseaux sociaux, géolocalisation, cyber, archives, vérification.">
+  <title>OSINT Atlas — La boîte à outils de la recherche ouverte</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230b1020'/><circle cx='50' cy='50' r='26' fill='none' stroke='%236ee7f9' stroke-width='8'/><circle cx='50' cy='50' r='8' fill='%23a78bfa'/></svg>">
+  <link rel="stylesheet" href="styles.css?v=2">
+  <script>
+    try {
+      var savedTheme = localStorage.getItem("osint-atlas-theme");
+      if (savedTheme === "light" || savedTheme === "dark") {
+        document.documentElement.dataset.theme = savedTheme;
+      }
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#outils">Aller aux outils</a>
 
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">◈</span>
+        <span class="brand-text">OSINT <span>Atlas</span></span>
+      </a>
+
+      <nav class="top-nav" aria-label="Navigation principale">
+        <a href="#outils">Outils</a>
+        <a href="#methode">Méthode</a>
+        <a href="#ethique">Éthique</a>
+      </nav>
+
+      <div class="header-actions">
+        <button id="randomBtn" class="btn ghost small" type="button" title="Ouvrir un outil au hasard">
+          <span aria-hidden="true">🎲</span><span class="hide-sm">Au hasard</span>
+        </button>
+        <button id="themeBtn" class="icon-btn" type="button" aria-label="Changer de thème" title="Changer de thème">
+          <span id="themeIcon" aria-hidden="true">☾</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero wrap">
+      <p class="eyebrow">La boîte à outils de la recherche ouverte</p>
+      <h1>Tous les outils OSINT.<br><span class="grad">Un seul atlas.</span></h1>
+      <p class="lede">
+        Recherche d’images, géolocalisation, réseaux sociaux, cybersécurité, archives, entreprises, données publiques françaises…
+        Explorez une sélection d’outils classés par usage, avec leur niveau d’accès.
+      </p>
+
+      <div class="search-shell">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <label class="sr-only" for="search">Rechercher un outil</label>
+        <input id="search" type="search" placeholder="Rechercher un outil, une techno, un usage…" autocomplete="off" spellcheck="false">
+        <kbd class="search-kbd">/</kbd>
+        <button id="clearSearch" class="clear-search" type="button" aria-label="Effacer la recherche" hidden>✕</button>
+      </div>
+
+      <div class="hero-stats" aria-label="Chiffres clés">
+        <div><strong id="statTools">0</strong><span>outils référencés</span></div>
+        <div><strong id="statCats">0</strong><span>catégories</span></div>
+        <div><strong id="statFree">0</strong><span>gratuits ou libres</span></div>
+        <div><strong>100 %</strong><span>sources ouvertes</span></div>
+      </div>
+    </section>
+
+    <section id="outils" class="wrap tools-section" aria-labelledby="toolsTitle">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <h2 id="toolsTitle">Explorer les outils</h2>
+          <p id="resultCount" aria-live="polite">Chargement…</p>
+        </div>
+        <div class="toolbar-right">
+          <label class="select-wrap">
+            <span class="sr-only">Filtrer par accès</span>
+            <select id="priceFilter">
+              <option value="all">Tous les accès</option>
+              <option value="Gratuit">Gratuit</option>
+              <option value="Libre">Libre / open source</option>
+              <option value="Freemium">Freemium</option>
+              <option value="Payant">Payant</option>
+            </select>
+          </label>
+          <label class="select-wrap">
+            <span class="sr-only">Trier les résultats</span>
+            <select id="sortSelect">
+              <option value="default">Pertinence</option>
+              <option value="az">Nom A → Z</option>
+              <option value="za">Nom Z → A</option>
+              <option value="cat">Catégorie</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="tools-layout">
+        <aside class="sidebar" aria-label="Filtres">
+          <div class="side-head">
+            <span>Catégories</span>
+            <button id="resetCats" class="link-btn" type="button">Toutes</button>
+          </div>
+          <div id="categoryList" class="cat-list"></div>
+
+          <div class="side-block">
+            <button id="favFilter" class="fav-toggle" type="button" aria-pressed="false">
+              <span><span id="favIcon" aria-hidden="true">☆</span> Mes favoris</span>
+              <span id="favCount" class="count">0</span>
+            </button>
+          </div>
+
+          <p class="side-note">
+            Astuce : appuyez sur <kbd>/</kbd> pour chercher, <kbd>Échap</kbd> pour effacer la recherche.
+            Cliquez sur l’étoile pour garder un outil de côté.
+          </p>
+        </aside>
+
+        <div class="results">
+          <div id="activeFilters" class="active-filters" hidden></div>
+          <div id="grid" class="grid"></div>
+          <div id="empty" class="empty" hidden>
+            <div class="empty-icon" aria-hidden="true">◎</div>
+            <h3>Aucun outil ne correspond</h3>
+            <p>Essayez un autre mot-clé ou réinitialisez les filtres.</p>
+            <button id="resetAll" class="btn primary" type="button">Réinitialiser les filtres</button>
+          </div>
+          <button id="loadMore" class="btn more" type="button" hidden>Charger plus d’outils</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="methode" class="wrap method" aria-labelledby="methodTitle">
+      <div class="section-head">
+        <p class="eyebrow">Du flou à la preuve</p>
+        <h2 id="methodTitle">La méthode en six temps</h2>
+        <p class="section-sub">Un outil ne remplace pas un raisonnement. Voici le cadre de travail utilisé par les enquêteurs open source.</p>
+      </div>
+      <ol class="method-grid">
+        <li><span class="step-num">01</span><h3>Cadrer</h3><p>Définir la question, le périmètre, les hypothèses et les limites juridiques avant de collecter.</p></li>
+        <li><span class="step-num">02</span><h3>Collecter</h3><p>Mobiliser les bonnes sources : moteurs, réseaux, archives, registres, données publiques.</p></li>
+        <li><span class="step-num">03</span><h3>Vérifier</h3><p>Recouper chaque information, remonter à la source primaire, analyser métadonnées et contexte.</p></li>
+        <li><span class="step-num">04</span><h3>Relier</h3><p>Cartographier personnes, entités, comptes et événements pour faire apparaître les liens.</p></li>
+        <li><span class="step-num">05</span><h3>Documenter</h3><p>Captures horodatées, URL archivées, journal de bord : rendre chaque conclusion reproductible.</p></li>
+        <li><span class="step-num">06</span><h3>Restituer</h3><p>Présenter les faits, les incertitudes et les sources avec la même rigueur, sans dépasser le mandat.</p></li>
+      </ol>
+    </section>
+
+    <section id="ethique" class="wrap ethics" aria-labelledby="ethicsTitle">
+      <div class="ethics-card">
+        <div>
+          <p class="eyebrow">Garder le cap</p>
+          <h2 id="ethicsTitle">Éthique, vie privée, légalité</h2>
+          <p>
+            Cet atlas est un annuaire pédagogique. Il ne donne aucun accès privilégié et n’encourage aucune intrusion.
+            L’OSINT consiste à exploiter des informations légalement accessibles, dans un but légitime et proportionné.
+          </p>
+          <p class="ethics-foot">Vérifiez toujours le cadre applicable avant de collecter des données personnelles.</p>
+        </div>
+        <ul class="ethics-list">
+          <li><strong>Sources ouvertes uniquement.</strong> Pas d’accès non autorisé, pas de contournement de paywall ou de compte privé.</li>
+          <li><strong>Minimisation.</strong> Ne collectez que ce qui est nécessaire à la question posée.</li>
+          <li><strong>Pas de doxxing.</strong> Ne publiez jamais d’informations permettant de nuire ou de localiser quelqu’un.</li>
+          <li><strong>RGPD & vie privée.</strong> Données personnelles : base légale, finalité, durée de conservation, sécurité.</li>
+          <li><strong>Traçabilité.</strong> Archivez et citez vos sources pour rester vérifiable et honnête sur vos limites.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <div class="footer-brand">
+        <span class="brand-mark small" aria-hidden="true">◈</span>
+        <div>
+          <strong>OSINT Atlas</strong>
+          <p>Annuaire indépendant d’outils de recherche ouverte. Aucun lien sponsorisé.</p>
+        </div>
+      </div>
+      <div class="footer-meta">
+        <span id="footCount">—</span>
+        <span>·</span>
+        <span>Dernière mise à jour : octobre 2026</span>
+        <span>·</span>
+        <a href="#top">Haut de page ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="data.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
